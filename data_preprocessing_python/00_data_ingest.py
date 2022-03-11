@@ -1,54 +1,90 @@
 import json
-import numpy as np
-from scipy.sparse import csr_matrix
+import os
+from scipy.sparse import csr_matrix, vstack, save_npz
 from sys import getsizeof
-from itertools import chain
 import time
+import pickle
+from songlist_to_pickle import get_songlist
+
+
+def make_mx(database):
+    '''
+    Fill mx with zeroes, and fill in 1's to correct indexes
+    returns matrix
+    :param database:
+    :return:
+    '''
+    # pre-fill matrix with zeroes
+
+    mx = []
+    # pre-fill with zeroes for width of length of songs
+    for i in range(len(database)):
+        mx.append([0] * len(song_map))
+
+    # fill 1's to indexes
+    for rowIdx, rw in enumerate(database):
+        for dbSong in rw:
+            mx[rowIdx][song_map[dbSong]] = 1
+
+    return mx
+
+
+# SPECIFY HOW MANY FILES YOU WANT TO USE (n) AND FILENAMES FOR
+# PICKLE SONGLIST (f_name_songlist) AND SPARSE MATRIX (f_name_mx)
 
 start = time.time()
-print("read data")
-# read data
-data = json.load(open('../../ML_AI/ds_capstone/data/mpd.slice.0-999.json'))
+counter = 0
+n = 10
+f_name_songlist = 'data10k.pickle'
+f_name_mx = 'sparse_matrix10k.npz'
 
-print("parse")
+
+# create songlist
+get_songlist(n, f_name_songlist)
+
+print("read songs")
+# get unique songs
+with open(f_name_songlist, 'rb') as f:
+    song_map = pickle.load(f)
+
+
+print("parse json")
 # parse json
 db = []
-for row in data["playlists"]:
-    # p_id = row["pid"]
-    tracks = [song["artist_name"] + " - " + song["track_name"] for song in row["tracks"]]
-    db.append(tracks)
+for file in os.listdir("../../ML_AI/ds_capstone/data/"):
+    if counter == n:
+        break
 
-print("get unique songs")
-# get unique songs
-song_list = list(set(chain(*db)))
+    db_start = time.time()
+    data = json.load(open('../../ML_AI/ds_capstone/data/'+file))
+    for row in data["playlists"]:
+        tracks = [song["artist_name"] + " - " + song["track_name"] for song in row["tracks"]]
+        db.append(tracks)
 
-song_map = {}
-for i, song in enumerate(song_list):
-    song_map[song] = i
+    print("Read file nr.", counter)
 
-print("Turn into matrix")
+    # create matrix
+    temp_mx = make_mx(db)
 
-# pre-fill matrix with zeroes
+    # sparsify matrix and either create new or append to existing sparseMatrix
+    if counter == 0:
+        sparseMatrix = csr_matrix(temp_mx)
+    else:
+        sparseMatrix = vstack([sparseMatrix, temp_mx])
+        print(getsizeof(sparseMatrix))
 
-mx = np.zeros((len(db), len(song_list)), dtype="int").tolist()
+    # to save memory we flush db and create it again.
+    # TODO: find better solution for saving memory. Garbage collection?
+    del db
+    db = []
 
+    counter += 1
+    db_end = time.time()
+    print(f"One round time: {db_end - db_start}")
 
-for rowIdx, row in enumerate(db):
-    for dbSong in row:
-        mx[rowIdx][song_map[dbSong]] = 1
+# Save file
+save_npz(f_name_mx, sparseMatrix)
 
-print("checksum db:", len(set(db[55])))
-print("checksum mx:", sum(mx[55]))
-
-# to sparse matrix
-# sparseMatrix = csr_matrix(mx)
-
-# Compare usage of variables
-# print(getsizeof(mx))
-
-# print(getsizeof(sparseMatrix))
-
-# print("mx[0]", mx[0])
 
 end = time.time()
-print(f"Total time: {end-start}")
+print(f"\n\nTOTAL RUN DURATION: {end-start}")
