@@ -6,20 +6,27 @@ from scipy.sparse import vstack, save_npz, coo_matrix
 import time
 import pickle
 
+
 #%% Environment Variables
 # path = "../../ML_AI/ds_capstone/data/"  # Henrik
 # path = "C:/Users/netzl/Offline Documents/spotify_million_playlist_dataset/data/" # Daniel
 path = "../data/spotify_million_playlist_dataset/data/" # Juan
-
-f_name_songlist = "allSongs_full.pickle" # name for song list pickle file
-f_name_mx = 'sparse_matrix_full.npz' # name for sparse matrix
+reduced_percentage = 5
+f_name_songlist = "allSongs_reduced.pickle" # name for song list pickle file
+f_name_mx = 'sparse_matrix_reduced.npz' # name for sparse matrix
 start = time.perf_counter()
+os.chdir("./data_preprocessing_python")
 
 #%% Create list of playlists
-def pickle_playlists(filename, data_loc):
+def pickle_playlists(filename, data_loc, percentage):
+    print(os.getcwd())
     db = []
     # get all files (dataset is divided)
-    for file in os.listdir(data_loc):
+    files = os.listdir(data_loc)
+    amount_files = len(files)
+    limit = int(amount_files * (percentage/100))
+    reduced_files = files[:limit]
+    for file in reduced_files:
         print(f"getting {file}")
         data = json.load(open(data_loc + file))
         # list of playlist are under the key "playlists"
@@ -32,7 +39,7 @@ def pickle_playlists(filename, data_loc):
 
 if not os.path.isfile(f_name_songlist):
     print("Pickle not found, creating it now. Please wait...")
-    pickle_playlists(f_name_songlist, path)
+    pickle_playlists(f_name_songlist, path, reduced_percentage)
     print("Created pickled playlists")
 else:
     print("Pickle found :)")
@@ -55,6 +62,7 @@ for rowIdx, rw in enumerate(playlists):
         row_ix.append(rowIdx)
         col_ix.append(song_map[dbSong])
 data_m = [1]*len(col_ix)
+print("Finished creating vectors")
 
 #%% Create Sparse Matrix
 print("Creating Sparse Matrix")

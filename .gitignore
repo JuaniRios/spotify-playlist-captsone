@@ -130,3 +130,5 @@ dmypy.json
 /data/
 /data_preprocessing_python/allSongs_full.pickle
 /data_preprocessing_python/sparse_matrix_full.npz
+/data_preprocessing_python/sparse_matrix_reduced.npz
+/data_preprocessing_python/allSongs_reduced.pickle
