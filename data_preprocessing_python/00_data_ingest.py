@@ -1,32 +1,26 @@
 import json
 import os
-from scipy.sparse import csr_matrix, vstack, save_npz
-from sys import getsizeof
+from scipy.sparse import vstack, save_npz, coo_matrix
 import time
 import pickle
 from songlist_to_pickle import get_songlist
 
 
-def make_mx(database):
+def make_inds(database):
     '''
-    Fill mx with zeroes, and fill in 1's to correct indexes
-    returns matrix
+    Creates lists of indices based on whether song exists on playlist).
+    Returns parameters for creating a sparse matrix.
     :param database:
     :return:
     '''
-    # pre-fill matrix with zeroes
 
-    mx = []
-    # pre-fill with zeroes for width of length of songs
-    for i in range(len(database)):
-        mx.append([0] * len(song_map))
-
-    # fill 1's to indexes
+    row_ix, col_ix = [], []
     for rowIdx, rw in enumerate(database):
         for dbSong in rw:
-            mx[rowIdx][song_map[dbSong]] = 1
-
-    return mx
+            row_ix.append(rowIdx)
+            col_ix.append(song_map[dbSong])
+    data_m = [1]*len(col_ix)
+    return data_m, row_ix, col_ix
 
 
 # SPECIFY HOW MANY FILES YOU WANT TO USE (n) AND FILENAMES FOR
@@ -34,47 +28,55 @@ def make_mx(database):
 
 start = time.time()
 counter = 0
-n = 10
-f_name_songlist = 'data10k.pickle'
-f_name_mx = 'sparse_matrix10k.npz'
+n = 1000
+f_name_songlist = "allSongs_full.pickle"
+f_name_mx = 'sparse_matrix_full.npz'
 
 
 # create songlist
-get_songlist(n, f_name_songlist)
-
-print("read songs")
-# get unique songs
-with open(f_name_songlist, 'rb') as f:
-    song_map = pickle.load(f)
+if not os.path.isfile(f_name_songlist):
+    get_songlist(n, f_name_songlist)
+    print("Created song pickle")
+    with open(f_name_songlist, 'rb') as f:
+        song_map = pickle.load(f)
+    print("Pickle read")
+else:
+    with open(f_name_songlist, 'rb') as f:
+        song_map = pickle.load(f)
+    print("Pickle exists, read data from pickle")
 
 
 print("parse json")
 # parse json
+path = "../../ML_AI/ds_capstone/data/"  # Henrik
+# path = "C:/Users/netzl/Offline Documents/spotify_million_playlist_dataset/data/" # Daniel
 db = []
-for file in os.listdir("../../ML_AI/ds_capstone/data/"):
+
+for file in os.listdir(path):
     if counter == n:
         break
 
     db_start = time.time()
-    data = json.load(open('../../ML_AI/ds_capstone/data/'+file))
+    data = json.load(open(path+file))
     for row in data["playlists"]:
-        tracks = [song["artist_name"] + " - " + song["track_name"] for song in row["tracks"]]
-        db.append(tracks)
+        db.append([song["artist_name"] + " - " + song["track_name"] for song in row["tracks"]])  # 2D array?
 
     print("Read file nr.", counter)
 
     # create matrix
-    temp_mx = make_mx(db)
+
+    data, row_inds, col_inds = make_inds(db)
 
     # sparsify matrix and either create new or append to existing sparseMatrix
     if counter == 0:
-        sparseMatrix = csr_matrix(temp_mx)
+        sparseMatrix = coo_matrix((data, (row_inds, col_inds)), shape=(len(db), len(song_map)))
+
     else:
+        temp_mx = coo_matrix((data, (row_inds, col_inds)), shape=(len(db), len(song_map)))
         sparseMatrix = vstack([sparseMatrix, temp_mx])
-        print(getsizeof(sparseMatrix))
+        del temp_mx
 
     # to save memory we flush db and create it again.
-    # TODO: find better solution for saving memory. Garbage collection?
     del db
     db = []
 
@@ -85,6 +87,6 @@ for file in os.listdir("../../ML_AI/ds_capstone/data/"):
 # Save file
 save_npz(f_name_mx, sparseMatrix)
 
-
+# print time taken
 end = time.time()
 print(f"\n\nTOTAL RUN DURATION: {end-start}")
