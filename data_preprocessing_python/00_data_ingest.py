@@ -8,14 +8,15 @@ import pickle
 
 
 #%% Environment Variables
-# path = "../../ML_AI/ds_capstone/data/"  # Henrik
+path = "../../ML_AI/ds_capstone/data/"  # Henrik
 # path = "C:/Users/netzl/Offline Documents/spotify_million_playlist_dataset/data/" # Daniel
-path = "../data/spotify_million_playlist_dataset/data/" # Juan
-reduced_percentage = 5
-f_name_songlist = "allSongs_reduced.pickle" # name for song list pickle file
-f_name_mx = 'sparse_matrix_reduced.npz' # name for sparse matrix
+# path = "../data/spotify_million_playlist_dataset/data/" # Juan
+reduced_percentage = 3
+f_name_songlist = "allSongs_reduced_3.pickle" # name for song list pickle file
+f_name_mx = 'sparse_matrix_reduced_3.npz' # name for sparse matrix
+f_name_song_map = "song_map_3.pickle" # name for song_map pickle (to keep the order of songs in mx)
 start = time.perf_counter()
-os.chdir("./data_preprocessing_python")
+# os.chdir("./data_preprocessing_python")
 
 #%% Create list of playlists
 def pickle_playlists(filename, data_loc, percentage):
@@ -54,6 +55,10 @@ print("Pickle reading finished")
 print("Creating vectors for spare matrix")
 song_list = list(set(chain(*playlists)))
 song_map = {song:i for i,song in enumerate(song_list)}
+
+# create pickle file to preserve the order of songs in matrix columns
+with open(f_name_song_map, 'wb') as f:
+    pickle.dump(song_map, f, pickle.HIGHEST_PROTOCOL)
 
 data_m, row_ix, col_ix = [], [], []
 
