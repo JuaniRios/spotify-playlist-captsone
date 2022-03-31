@@ -3,7 +3,9 @@ from scipy.sparse.linalg import svds
 import pickle
 import numpy as np
 import pandas as pd
+import time
 
+start = time.perf_counter()
 #%% Load sparse matrix
 mx = sparse.load_npz("../data_preprocessing_python/sparse_matrix_reduced_2.npz")
 
@@ -12,7 +14,7 @@ with open("../data_preprocessing_python/allSongs_reduced_2.pickle", 'rb') as f:
     playlists = pickle.load(f)
 
 # read leftout songs
-with open("../data_preprocessing_python/leftout.pickle", 'rb') as f:
+with open("../data_preprocessing_python/leftout_2.pickle", 'rb') as f:
     leftout_songs = pickle.load(f)
 
 # Read song_map to recreate
@@ -48,22 +50,22 @@ preds_df.head()
 
 #%% Access Recommendations by Playlist Index
 # Show top 10 recommendations. Index means a specific playlist you want to see the recommendations for
-# track hitrate
+# track hit rate
+
 hr = []
-for i in range(len(playlists)):
-    idx = i  # index for specific playlist
-    print(i/len(playlists))
-    # Top 20 recommendations, songs already present in playlist are removed
-    #print("Top 20 Recommendations")
-    SVD_recs = [s for s in preds_df.iloc[idx].sort_values(ascending=False).index if s not in playlists[idx]][:20]
+for idx in range(len(playlists[:100])): # only first 100 playlists
+    print(idx/len(playlists))
+    # Top 10 recommendations, songs already present in playlist are removed
+    #print("Top 10 Recommendations")
+    SVD_recs = [s for s in preds_df.iloc[idx].sort_values(ascending=False).index if s not in playlists[idx]][:10]
     #print(SVD_recs, end="\n\n\n")
 
     # Calculate Hit Rate
     hr.append(sum([r in leftout_songs[idx] for r in SVD_recs]))
-    #print("Hit Rate:")
-    #print(hr[i])
 
     # Show 20 first songs from playlist to compare the recommendations. Use same index as previous cell
-    #print(playlists[idx][:20])
+    # print(playlists[idx][:20])
 print("Mean Hit Rate:")
 print(sum(hr)/len(hr))
+end = time.perf_counter()
+print(f"\n\nTOTAL RUN DURATION: {end-start}")
