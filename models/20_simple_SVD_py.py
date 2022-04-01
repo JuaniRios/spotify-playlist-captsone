@@ -1,71 +1,46 @@
-from scipy import sparse
-from scipy.sparse.linalg import svds
 import pickle
-import numpy as np
-import pandas as pd
+from scipy.sparse import load_npz
+from spotify_modelling import *
 import time
 
 start = time.perf_counter()
-#%% Load sparse matrix
-mx = sparse.load_npz("../data_preprocessing_python/sparse_matrix_reduced_2.npz")
 
-# read playlists
-with open("../data_preprocessing_python/allSongs_reduced_2.pickle", 'rb') as f:
+reduced_percentage = 2
+
+file_all_songs = "allSongs.pickle"  # name for song list pickle file
+
+file_MF_songs = f"songlist_for_MF_reduced_{reduced_percentage}.pickle"  # input songs for MF
+file_leftout_songs = f"leftout_{reduced_percentage}.pickle"  # name for list of left out songs
+
+file_mx_reduced = f'sparse_matrix_reduced_{reduced_percentage}.npz'  # name for MF input sparse matrix
+file_songmap_reduced = f'song_map_{reduced_percentage}.pickle'  # reduced song_map
+
+file_songmap = "song_map.pickle"  # full song_map
+file_mx_full = "sparseMatrix_full.npz"  # name for full matrix (used in EDA)
+
+path = '../data_preprocessing_python/'
+
+#%% Load sparse matrix
+print("Loading files...")
+mx = load_npz(path+file_mx_reduced)
+
+# read playlists for MF (without left out songs)
+with open(path+file_MF_songs, 'rb') as f:
     playlists = pickle.load(f)
 
 # read leftout songs
-with open("../data_preprocessing_python/leftout_2.pickle", 'rb') as f:
+with open(path+file_leftout_songs, 'rb') as f:
     leftout_songs = pickle.load(f)
 
 # Read song_map to recreate
-with open("../data_preprocessing_python/song_map_2.pickle", 'rb') as f:
-    smap = pickle.load(f)
+with open(path+file_songmap_reduced, 'rb') as f:
+    songmap_reduced = pickle.load(f)
 
-# inverse song_map to easily access songs by index
-inv_map = {v: k for k, v in smap.items()}
+recommendations = simple_svd(mx, playlists, songmap_reduced, n_recommendations=10, n_playlists=100)
 
+hit_rate = mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists=100)
+print(hit_rate)
+# 100 songs: 0.69; 1000 songs: 0.937; 10 000 songs: 0.8841, 100 000: 0.8723 in top 10 recommendations
 
-#%% SVD
-
-# Decompose to matrices from sparse matrix. "svds" is a sparse option for standard "svd".
-# Still have to figure out how number of eigenvalues (k) matters to predictions
-
-# To avoid ValueError: matrix type must be 'f', 'd', 'F', or 'D'
-# upcast matrix to fload or double.
-mx = mx.asfptype()
-# create matrices
-U, sigma, V = svds(mx, k=15)
-
-# diagonal matrix of eigenvalues, needed for reconstruction
-sigma = np.diag(sigma)
-
-# reconstruct original matrix by producing dot product U . Sigma . V
-recommendations = np.dot(np.dot(U, sigma), V)
-
-#%% Reconstruct Matrix for Recommendations
-# Reconstructed matrix in dataframe format. Column names set to song names
-# !!!! The values are not probabilities yet. Need to normalize the values to scale 0-1
-preds_df = pd.DataFrame(recommendations, columns=list(smap.keys()))
-preds_df.head()
-
-#%% Access Recommendations by Playlist Index
-# Show top 10 recommendations. Index means a specific playlist you want to see the recommendations for
-# track hit rate
-
-hr = []
-for idx in range(len(playlists[:100])): # only first 100 playlists
-    print(idx/len(playlists))
-    # Top 10 recommendations, songs already present in playlist are removed
-    #print("Top 10 Recommendations")
-    SVD_recs = [s for s in preds_df.iloc[idx].sort_values(ascending=False).index if s not in playlists[idx]][:10]
-    #print(SVD_recs, end="\n\n\n")
-
-    # Calculate Hit Rate
-    hr.append(sum([r in leftout_songs[idx] for r in SVD_recs]))
-
-    # Show 20 first songs from playlist to compare the recommendations. Use same index as previous cell
-    # print(playlists[idx][:20])
-print("Mean Hit Rate:")
-print(sum(hr)/len(hr))
 end = time.perf_counter()
 print(f"\n\nTOTAL RUN DURATION: {end-start}")
