@@ -35,10 +35,10 @@ def dump_all_songs(filename, data_loc):
 def create_playlists(filename_MF, filename_leftout, data_loc, reduced_percentage = 2):
     '''
     Input:
-        - filename_MF: file which contains playlists for matrix factorization
-        - filename_leftout: file which contains leftout songs of each playlists
+        - filename_MF: file which shall contain playlists for matrix factorization
+        - filename_leftout: file which shall contain leftout songs of each playlists
         - data_loc: path to source file
-        - reduced_percentage: percent of playlists you want to consider; Default: 2
+        - reduced_percentage: percent of playlists you want to consider; Default: 2%
     Output: 1) Playlist containing only those songs which serve as input to the Matrix Factorization (MF).
             2) Playlist containing only those songs which were left out and are no input to the MF
     '''

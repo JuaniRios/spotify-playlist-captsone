@@ -64,10 +64,10 @@ def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists =
 def mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists = 100):
     '''
     Input:
-        - playlists: playlists for which the recommendations were made
-        - recommendations: list of recommendations for each playlist
+        - playlists: playlists for which the recommendations were made and were input to the simple_svd()
+        - recommendations: list of recommendations for each playlist which was the output of simple_svd()
         - leftout_songs: list of songs which were removed for evaluation purposes
-        - n_playlists: number of playlists for which recommendations were made
+        - n_playlists: number of playlists for which recommendations were made (== len(playlists)? Have to check -> if so, you can remove this parameter!)
     This function evaluates the results of the recommendations by calculating the hit rate.
     Output: average hit rate over all playlists
     '''
