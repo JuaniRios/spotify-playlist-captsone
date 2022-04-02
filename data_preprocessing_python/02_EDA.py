@@ -97,5 +97,5 @@ if not (os.path.isfile(filename)):
         # dump results to json file
         with open(filename, "w") as outfile:
             json.dump(results, outfile, indent=4)
-    else:
-        print("EDA file already exists.")
+else:
+    print("EDA file already exists.")
