@@ -17,7 +17,7 @@ if __name__ == "__main__":
     file_leftout_songs = f"leftout_{reduced_percentage}.pickle"  # name for list of left out songs
 
     file_songmap_reduced = f'song_map_{reduced_percentage}.pickle' # reduced song_map
-    file_mx_reduced = f'sparse_matrix_reduced_{reduced_percentage}.pickle'  # name for MF input sparse matrix
+    file_mx_reduced = f'sparse_matrix_reduced_{reduced_percentage}.npz'  # name for MF input sparse matrix
 
     file_songmap = "song_map.pickle"  # full song_map
     file_mx_full = "sparseMatrix_full.npz"  # name for full matrix (used in EDA)
