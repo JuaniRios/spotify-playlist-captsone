@@ -4,12 +4,13 @@ import os
 import pandas as pd
 from scipy import sparse
 import matplotlib.pyplot as plt
-os.chdir("C:/Users/juani/PycharmProjects/spotify-playlist-captsone/data_preprocessing_python")
-
+# os.chdir("C:/Users/juani/PycharmProjects/spotify-playlist-captsone/data_preprocessing_python")
+os.chdir("C:/Users/netzl/OneDrive/Dokumente/Studium/Informatics Krems/4h semester/Data Science Capstone/spotify-playlist-captsone/data_preprocessing_python")
 #%% Load Matrix
 print(os.getcwd())
 print("loading matrix from file")
-matrix = sparse.load_npz("./sparse_matrix_reduced.npz")
+small_matrix = sparse.load_npz("./sparse_matrix_reduced_2.pickle.npz")
+big_matrix = sparse.load_npz("../depr/sparse_matrix_reduced_2.npz")
 print("finished loading matrix")
 
 #%% plot matrix

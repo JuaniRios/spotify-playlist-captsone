@@ -5,6 +5,7 @@ from ordered_set import OrderedSet
 import os
 import pickle
 from scipy.sparse import save_npz, coo_matrix
+from collections import defaultdict
 
 def dump_all_songs(filename, data_loc):
     '''
@@ -56,6 +57,7 @@ def create_playlists(filename_MF, filename_leftout, data_loc, reduced_percentage
         print(f"Getting {file}...")
         data = json.load(open(data_loc + file))
         # list of playlist are under the key "playlists"
+        song_count = {}
         for row in data["playlists"]:
             # define percentage of songs which will be used for MF in each playlist
             leftout_cutoff = int(round(len(row) * .9, 0))  # 90% of each playlist for creating recommendation
@@ -91,12 +93,27 @@ def create_song_map(filename, playlist_all_songs, percentage = 100):
     # define cutoff of given percentage
     # only create songmap for playlists until cutoff
     cutoff = int(round(len(playlist_all_songs)*percentage/100,0))
+
+    # see how many times each song appears in the dataset
+    song_count = {}
+    song_count = defaultdict(lambda: 0, song_count)
+    for playlist in playlist_all_songs[:cutoff]:
+        for song in playlist:
+            song_count[song] += 1
+    reduced_songs = []
+    for song, count in song_count.items():
+        if count > 5:
+            reduced_songs.append(song)
+
+
+
+
     # create a songlist containing each song; remove duplicates; preserve original order
-    song_list = list(OrderedSet(chain(*(playlist_all_songs[:cutoff]))))
-    print(f"Length of song_list: {len(song_list)}")
+    # song_list = list(OrderedSet(chain(*(playlist_all_songs[:cutoff]))))
+    print(f"Length of reduced_songs: {len(reduced_songs)}")
     # create song_map to map each song to its index
     print("Creating song map...")
-    song_map = {song: i for i, song in enumerate(song_list)}
+    song_map = {song: i for i, song in enumerate(reduced_songs)}
     # Save song map
     with open(filename, 'wb') as f:
         pickle.dump(song_map, f, pickle.HIGHEST_PROTOCOL)
@@ -121,9 +138,10 @@ def create_sparse_matrix(filename, playlists, song_map):
     for rowIdx, rw in enumerate(playlists):
         # for each playlist
         for dbSong in rw:
-            # for each song in a playlist
-            row_ix.append(rowIdx)  # row index
-            col_ix.append(song_map[dbSong])  # song index
+            if dbSong in song_map:
+                # for each song in a playlist
+                row_ix.append(rowIdx)  # row index
+                col_ix.append(song_map[dbSong])  # song index
     data_m = [1] * len(col_ix) # create data of same length as number of songs
 
     # %% Create Sparse Matrix

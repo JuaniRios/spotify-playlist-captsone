@@ -40,7 +40,7 @@ recommendations = simple_svd(mx, playlists, songmap_reduced, n_recommendations=1
 
 hit_rate = mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists=100)
 print(hit_rate)
-# 100 songs: 0.69; 1000 songs: 0.937; 10 000 songs: 0.8841, 100 000: 0.8723 in top 10 recommendations
+# 100 playlists: 0.69; 1000 playlists: 0.937; 10 000 playlists: 0.8841, 100 000: 0.8723 in top 10 recommendations
 
 end = time.perf_counter()
 print(f"\n\nTOTAL RUN DURATION: {end-start}")
