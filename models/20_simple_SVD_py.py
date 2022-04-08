@@ -6,6 +6,8 @@ import time
 start = time.perf_counter()
 
 reduced_percentage = 2
+n_playlists = 100
+n_recs = 10
 
 file_all_songs = "allSongs.pickle"  # name for song list pickle file
 
@@ -36,11 +38,20 @@ with open(path+file_leftout_songs, 'rb') as f:
 with open(path+file_songmap_reduced, 'rb') as f:
     songmap_reduced = pickle.load(f)
 
-recommendations = simple_svd(mx, playlists, songmap_reduced, n_recommendations=10, n_playlists=100)
+recommendations = simple_svd(mx, playlists, songmap_reduced, n_recommendations=n_recs, n_playlists=n_playlists)
 
-hit_rate = mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists=100)
+hit_rate = mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists=n_playlists)
 print(hit_rate)
 # 100 playlists: 0.69; 1000 playlists: 0.937; 10 000 playlists: 0.8841, 100 000: 0.8723 in top 10 recommendations
+
+# after data set compression:
+# 1000 playlists, 2% reduced percentage, leftout_cutoff .9, min_songs: 5, min_song_count = 5: 0.14 -> too few training samples?
+# 1000 playlists, 3% reduced percentage, leftout_cutoff .75, min_songs 40, min_song_count = 5: .548
+# 1000 playlists, 3% reduced percentage, leftout_cutoff .9, min_songs 40, min_song_count = 5: .205
+# 1000 playlists, 2% reduced percentage, leftout_cutoff .7, min_songs 40, min_song_count = 1: 0.66
+# 100 playlists, 2% reduced percentage, leftout_cutoff .9, min_songs 1, min_song_count = 1: 0.66
+
+# RESULTS NOT REPRODUCIBLE ANYMORE!!!
 
 end = time.perf_counter()
 print(f"\n\nTOTAL RUN DURATION: {end-start}")

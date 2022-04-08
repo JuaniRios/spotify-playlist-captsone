@@ -32,6 +32,8 @@ def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists =
     print("Calculating recommendations...")
     # reconstruct original matrix by producing dot product U . Sigma . V
     recommendations = np.dot(np.dot(U, sigma), V)
+    # make above calculation more memory efficient: use np array of arrays
+    # / only save recommendations above a certain probability and use sparse matrix again...
 
     # Reconstruct Matrix for Recommendations
     # Reconstructed matrix in dataframe format. Column names set to song names
@@ -79,5 +81,4 @@ def mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists = 100):
     print("Mean Hit Rate:")
     # calculate mean
     mean_hit_rate = sum(hit_rates) / len(hit_rates)
-    print(mean_hit_rate)
     return mean_hit_rate

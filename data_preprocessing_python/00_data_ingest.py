@@ -11,6 +11,10 @@ if __name__ == "__main__":
     # path = "../data/spotify_million_playlist_dataset/data/" # Juan
 
     reduced_percentage = 2
+    min_song_count = 1
+    cutoff = 0.9
+    min_songs = 1
+
     file_all_songs = "allSongs.pickle"  # name for song list pickle file
 
     file_MF_songs = f"songlist_for_MF_reduced_{reduced_percentage}.pickle"  # input songs for Matrix factorization
@@ -34,17 +38,6 @@ if __name__ == "__main__":
         with open(file_all_songs, 'rb') as f:
             all_songs = pickle.load(f)
 
-    # getting leftout and matrix factorization songs (load or create)
-    if not (os.path.isfile(file_MF_songs) & os.path.isfile(file_leftout_songs)):
-        print("Creating reduced playlists.")
-        MF_songs, leftout_songs = create_playlists(file_MF_songs, file_leftout_songs, path, reduced_percentage = 2)
-    else:
-        print("Input and leftout playlist found. Loading...")
-        with open(file_MF_songs, 'rb') as f:
-            MF_songs = pickle.load(f)
-        with open(file_leftout_songs, 'rb') as f:
-            leftout_songs = pickle.load(f)
-
     # getting songmap (name => index)
     if not (os.path.isfile(file_songmap)):
         print("Creating full song map.")
@@ -57,11 +50,25 @@ if __name__ == "__main__":
     # getting the reduced version of songmap
     if not (os.path.isfile(file_songmap_reduced)):
         print("Creating reduced song map.")
-        song_map_reduced = create_song_map(file_songmap_reduced, all_songs, percentage = reduced_percentage)
+        song_map_reduced = create_song_map(file_songmap_reduced, all_songs, percentage = reduced_percentage,
+                                           min_song_count=min_song_count)
     else:
         print("Reduced song map found. Loading...")
         with open(file_songmap_reduced, 'rb') as f:
             song_map_reduced = pickle.load(f)
+
+    # getting leftout and matrix factorization songs (load or create)
+    if not (os.path.isfile(file_MF_songs) & os.path.isfile(file_leftout_songs)):
+        print("Creating reduced playlists.")
+        MF_songs, leftout_songs = create_playlists(file_MF_songs, file_leftout_songs, path, song_map_reduced,
+                                                   reduced_percentage = reduced_percentage, cutoff_factor=cutoff,
+                                                   min_songs=min_songs)
+    else:
+        print("Input and leftout playlist found. Loading...")
+        with open(file_MF_songs, 'rb') as f:
+            MF_songs = pickle.load(f)
+        with open(file_leftout_songs, 'rb') as f:
+            leftout_songs = pickle.load(f)
 
     # getting the full sparse matrix
     if not (os.path.isfile(file_mx_full)):
@@ -69,8 +76,8 @@ if __name__ == "__main__":
         sparseMatrix_full = create_sparse_matrix(file_mx_full, all_songs, song_map)
     else:
         print("Full sparse matrix found. Loading...")
-        with open(file_mx_full, 'rb') as f:
-            sparseMatrix_full = load_npz(f)
+        #with open(file_mx_full, 'rb') as f:
+        #    sparseMatrix_full = load_npz(f)
 
     # getting the reduced sparse matrix
     if not (os.path.isfile(file_mx_reduced)):
@@ -78,8 +85,8 @@ if __name__ == "__main__":
         sparseMatrix_reduced = create_sparse_matrix(file_mx_reduced, MF_songs, song_map_reduced)
     else:
         print("Reduced sparse matrix found. Loading...")
-        with open(file_mx_reduced, 'rb') as f:
-            sparseMatrix_reduced = load_npz(f)
+        #with open(file_mx_reduced, 'rb') as f:
+        #    sparseMatrix_reduced = load_npz(f)
 
     # print time taken
     end = time.perf_counter()
