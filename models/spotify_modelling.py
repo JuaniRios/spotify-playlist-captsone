@@ -48,7 +48,7 @@ def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists =
     # Index means a specific playlist you want to see the recommendations for
 
     results = []  # store recommendations for each playlist
-    for idx in range(len(playlists[:n_playlists])):
+    for idx in range(n_playlists):
         # go through each playlist until defined limit n_playlists
         print(f"{round(idx / n_playlists * 100, 2)}% done.")
         # Top n recommendations, songs already present in playlist are removed
@@ -63,7 +63,7 @@ def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists =
 
     return results
 
-def mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists = 100):
+def mean_hit_rate(recommendations, leftout_song):
     '''
     Input:
         - playlists: playlists for which the recommendations were made and were input to the simple_svd()
@@ -74,7 +74,7 @@ def mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists = 100):
     Output: average hit rate over all playlists
     '''
     hit_rates = [] # store hit rates for each playlist
-    for idx in range(len(playlists[:n_playlists])):
+    for idx in range(len(recommendations)):
         # Calculate Hit Rate for each playlist
         # sum up all songs in leftout_songs which are in our top recommendations for each playlist
         hit_rates.append(sum([song in leftout_songs[idx] for song in recommendations[idx]]))
