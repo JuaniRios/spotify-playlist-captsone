@@ -74,10 +74,10 @@ def mean_hit_rate(recommendations, leftout_songs):
     Output: average hit rate over all playlists
     '''
     hit_rates = [] # store hit rates for each playlist
-    for idx in range(len(recommendations[0])):
+    for idx in range(len(recommendations)):
         # Calculate Hit Rate for each playlist
         # sum up all songs in leftout_songs which are in our top recommendations for each playlist
-        hr = sum([song in leftout_songs[idx] for song in recommendations[0][idx]]) / len(leftout_songs[idx])
+        hr = sum([song in leftout_songs[idx] for song in recommendations[idx]]) / len(leftout_songs[idx])
         hit_rates.append(hr)
         print(f'Hit rate for playlist {idx}: {hr}')
     print("Mean Hit Rate:")
