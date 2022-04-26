@@ -5,7 +5,7 @@ import time
 
 start = time.perf_counter()
 
-reduced_percentage = 2
+reduced_percentage = 8
 n_playlists = 100
 n_recs = 10
 
@@ -40,7 +40,7 @@ with open(path+file_songmap_reduced, 'rb') as f:
 
 recommendations = simple_svd(mx, playlists, songmap_reduced, n_recommendations=n_recs, n_playlists=n_playlists)
 
-hit_rate = mean_hit_rate(playlists, recommendations, leftout_songs, n_playlists=n_playlists)
+hit_rate = mean_hit_rate(recommendations, leftout_songs)
 print(hit_rate)
 # 100 playlists: 0.69; 1000 playlists: 0.937; 10 000 playlists: 0.8841, 100 000: 0.8723 in top 10 recommendations
 

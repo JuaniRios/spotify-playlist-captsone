@@ -6,6 +6,7 @@ import os
 import pickle
 from scipy.sparse import save_npz, coo_matrix
 from collections import defaultdict
+import random
 
 def dump_all_songs(filename, data_loc):
     '''
@@ -66,14 +67,19 @@ def create_playlists(filename_MF, filename_leftout, data_loc, songmap, reduced_p
             tracks_in_each_playlist = [song["artist_name"] + " - " + song["track_name"] for song in row["tracks"]
                                        if (song["artist_name"] + " - " + song["track_name"]) in songmap]
             # tracks_in_each_playlist = [playlist for playlist in tracks_in_each_playlist if len(playlist) >= min_songs]
-            if len(tracks_in_each_playlist) >= min_songs: playlists.append(tracks_in_each_playlist)
+            if len(tracks_in_each_playlist) >= min_songs:
+                playlists.append(tracks_in_each_playlist)
             # define percentage of songs which will be used for MF in each playlist
         for playlist in playlists:
             leftout_cutoff = int(round(len(playlist) * cutoff_factor, 0))  # default: 90% of each playlist for creating recommendation
             # default: append 90% to tracks list used for MF
-            MF_songs.append(playlist[:leftout_cutoff]) # default: first 90%
+
+            # take out random samples and use them as leftouts
+            leftout = [playlist.pop(random.randrange(len(playlist))) for _ in range(len(playlist) - leftout_cutoff)]
+
+            MF_songs.append(playlist) # default: first 90%
             # default: append 10% of songs in each playlist to leftout_songs for evaluation
-            leftout_songs.append(playlist[leftout_cutoff:]) # default: last 10% for evaluation
+            leftout_songs.append(leftout) # default: last 10% for evaluation
 
     with open(filename_MF, 'wb') as f:
         # save playlists for MF
