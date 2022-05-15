@@ -4,6 +4,42 @@ import numpy as np
 import pandas as pd
 from scipy.sparse.linalg import svds
 
+from lightfm import LightFM
+from lightfm.evaluation import precision_at_k
+from lightfm.evaluation import auc_score
+
+
+def lightfm_model(mx, playlists, songmap, lr=0.05, comp=30, ep=25, sched="adagrad", loss="warp",
+                  n_recommendations = 10, n_playlists = 100):
+
+    model = LightFM(learning_rate=lr, loss=loss, no_components=comp, learning_schedule=sched)
+    print("Training model...")
+    model.fit(mx, epochs=ep, num_threads=2)
+
+    print("Calculating score")
+    train_precision = precision_at_k(model, mx, k=10).mean()
+    print("train precision:", train_precision)
+
+    train_auc = auc_score(model, mx).mean()
+    print("train auc score:", train_auc)
+
+    # predict TODO: pick random playlists instead of just n first playlists
+    print("Calculating recommendations...")
+    n_users, n_items = mx.shape
+    scores = []
+    for idx in range(n_playlists):
+        scores.append(model.predict(idx, np.arange(n_items)))
+
+    preds_df = pd.DataFrame(scores, columns=list(songmap.keys())) #df for prediction scores for each song
+
+
+    results = []
+    for idx in range(n_playlists):  # pick top n recommendations that are not already present in playlist
+        recs = [s for s in preds_df.iloc[idx].sort_values(ascending=False).index if s not in playlists[idx]]
+        results.append(recs[:n_recommendations])
+
+    return results
+
 def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists = 100):
     '''
     Input:
