@@ -29,7 +29,7 @@ file_songmap_reduced = f'song_map_{reduced_percentage}.pickle'  # reduced song_m
 file_songmap = "song_map.pickle"  # full song_map
 file_mx_full = "sparseMatrix_full.npz"  # name for full matrix (used in EDA)
 
-path = '../data_preprocessing_python/'
+path = '../preprocessing/'
 
 #%% Load sparse matrix
 print("Loading files...")

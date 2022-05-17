@@ -128,7 +128,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 /data/
-/data_preprocessing_python/allSongs_full.pickle
-/data_preprocessing_python/sparse_matrix_full.npz
-/data_preprocessing_python/sparse_matrix_reduced.npz
-/data_preprocessing_python/allSongs_reduced.pickle
+/preprocessing/allSongs_full.pickle
+/preprocessing/sparse_matrix_full.npz
+/preprocessing/sparse_matrix_reduced.npz
+/preprocessing/allSongs_reduced.pickle

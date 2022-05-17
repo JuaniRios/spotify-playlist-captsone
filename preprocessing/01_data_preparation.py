@@ -4,17 +4,17 @@ import os
 import pandas as pd
 from scipy import sparse
 import matplotlib.pyplot as plt
-# os.chdir("C:/Users/juani/PycharmProjects/spotify-playlist-captsone/data_preprocessing_python")
-os.chdir("C:/Users/netzl/OneDrive/Dokumente/Studium/Informatics Krems/4h semester/Data Science Capstone/spotify-playlist-captsone/data_preprocessing_python")
+# os.chdir("C:/Users/juani/PycharmProjects/spotify-playlist-captsone/preprocessing")
+os.chdir("C:/Users/netzl/OneDrive/Dokumente/Studium/Informatics Krems/4h semester/Data Science Capstone/spotify-playlist-captsone/preprocessing")
 #%% Load Matrix
 print(os.getcwd())
 print("loading matrix from file")
 small_matrix = sparse.load_npz("./sparse_matrix_reduced_2.pickle.npz")
-big_matrix = sparse.load_npz("../depr/sparse_matrix_reduced_2.npz")
+# big_matrix = sparse.load_npz("../depr/sparse_matrix_reduced_2.npz")
 print("finished loading matrix")
 
 #%% plot matrix
-plt.spy(matrix)
+plt.spy(small_matrix)
 plt.show()
 
 #%% test
@@ -38,7 +38,7 @@ file_songmap_reduced = f'song_map_{reduced_percentage}.pickle'  # reduced song_m
 file_songmap = "song_map.pickle"  # full song_map
 file_mx_full = "sparseMatrix_full.npz"  # name for full matrix (used in EDA)
 
-path = '../data_preprocessing_python/'
+path = '/'
 
 # read playlists for MF (without left out songs)
 with open(path+file_MF_songs, 'rb') as f:
