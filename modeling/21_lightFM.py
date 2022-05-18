@@ -1,12 +1,14 @@
+import os
+from decouple import config
+os.chdir(config("PROJECT_PATH"))
 import pickle5 as pickle
 from scipy.sparse import load_npz
-from spotify_modelling import *
+from modeling.modeling_functions import *
 import time
 
 
-start = time.perf_counter()
 
-reduced_percentage = 6
+reduced_percentage = int(config("REDUCED_PERCENTAGE"))
 n_playlists = 100
 n_recs = 10
 
@@ -17,43 +19,48 @@ n_comp = 30
 loss = 'warp'
 learning_schedule = 'adagrad'
 
+file_all_songs = config("FILE_ALL_SONGS")
+file_songmap = config("FILE_SONGMAP")
+file_mx_full = config("FILE_MX_FULL")
 
-file_all_songs = "allSongs.pickle"  # name for song list pickle file
+file_MF_songs = config("FILE_MF_SONGS").format(reduced_percentage=reduced_percentage)
+file_leftout_songs = config("FILE_LEFTOUT_SONGS").format(reduced_percentage=reduced_percentage)
 
-file_MF_songs = f"songlist_for_MF_reduced_{reduced_percentage}.pickle"  # input songs for MF
-file_leftout_songs = f"leftout_{reduced_percentage}.pickle"  # name for list of left out songs
+file_songmap_reduced = config("FILE_SONGMAP_REDUCED").format(reduced_percentage=reduced_percentage)
+file_mx_reduced = config("FILE_MX_REDUCED").format(reduced_percentage=reduced_percentage)
 
-file_mx_reduced = f'sparse_matrix_reduced_{reduced_percentage}.npz'  # name for MF input sparse matrix
-file_songmap_reduced = f'song_map_{reduced_percentage}.pickle'  # reduced song_map
-
-file_songmap = "song_map.pickle"  # full song_map
-file_mx_full = "sparseMatrix_full.npz"  # name for full matrix (used in EDA)
-
-path = '../preprocessing/'
-
-#%% Load sparse matrix
+# %% Create model
+start = time.perf_counter()
 print("Loading files...")
-mx = load_npz(path+file_mx_reduced)
+mx = load_npz(file_mx_reduced)
 
 # read playlists for MF (without left out songs)
-with open(path+file_MF_songs, 'rb') as f:
+with open(file_MF_songs, 'rb') as f:
     playlists = pickle.load(f)
 
 # read leftout songs
-with open(path+file_leftout_songs, 'rb') as f:
+with open(file_leftout_songs, 'rb') as f:
     leftout_songs = pickle.load(f)
 
 # Read song_map to recreate
-with open(path+file_songmap_reduced, 'rb') as f:
+with open(file_songmap_reduced, 'rb') as f:
     songmap_reduced = pickle.load(f)
-
-
 
 recommendations = lightfm_model(mx, playlists, songmap_reduced, lr=lr, comp=n_comp, ep=epochs, sched=learning_schedule,
                                 loss=loss, n_recommendations=n_recs, n_playlists=n_playlists)
 
+# save model for later use
+with open("lightFM_model.pickle", "wb+") as f:
+    pickle.dump(recommendations, f, protocol=pickle.HIGHEST_PROTOCOL)
+
+end = time.perf_counter()
+print(f"\n\nTOTAL RUN DURATION: {end - start}")
+
+#%% Check performance
+with open("lightFM_model.pickle", "rb") as f:
+    recommendations = pickle.load(f)
+
 hit_rate = mean_hit_rate(recommendations, leftout_songs)
 print(hit_rate)
 
-end = time.perf_counter()
-print(f"\n\nTOTAL RUN DURATION: {end-start}")
+

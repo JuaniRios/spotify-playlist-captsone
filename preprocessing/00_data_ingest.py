@@ -8,20 +8,20 @@ from preprocessing.cleaning_functions import *
 # %% Environment Variables
 dataset_path = config("PROJECT_PATH") + "/data/spotify_million_playlist_dataset/data/"
 
-reduced_percentage = 2  # reduce dataset by 100-reduced_percentage %. so this var is the actual size compared to original
-min_song_count = 1  # include in dataset only songs (columns) that appear x amount of times in the dataset
-cutoff = 0.9  # train/test data ratio. train = x * dataset, test = 1-x * dataset
-min_songs = 1  # include in dataset only playlists (rows) that contain x amount of songs
+reduced_percentage = int(config("REDUCED_PERCENTAGE"))
+min_song_count = int(config("MIN_SONG_COUNT"))
+cutoff = float(config("CUTOFF"))
+min_songs = int(config("MIN_SONGS"))
 
-file_all_songs = "allSongs.pickle"  # file name for song list pickle file
-file_songmap = "song_map.pickle"  # file name of dict of song_name: col_index in matrix.
-file_mx_full = "sparseMatrix_full.npz"  # file name for full matrix (used in EDA)
+file_all_songs = config("FILE_ALL_SONGS")
+file_songmap = config("FILE_SONGMAP")
+file_mx_full = config("FILE_MX_FULL")
 
-file_MF_songs = f"songlist_for_MF_reduced_{reduced_percentage}.pickle"  # file name of input songs for Matrix factorization
-file_leftout_songs = f"leftout_{reduced_percentage}.pickle"  # file name of list of left out songs (used for testing)
+file_MF_songs = config("FILE_MF_SONGS").format(reduced_percentage=reduced_percentage)
+file_leftout_songs = config("FILE_LEFTOUT_SONGS").format(reduced_percentage=reduced_percentage)
 
-file_songmap_reduced = f'song_map_{reduced_percentage}.pickle'  # filename for reduced songmap for MF
-file_mx_reduced = f'sparse_matrix_reduced_{reduced_percentage}.npz'  # file name of MF input sparse matrix
+file_songmap_reduced = config("FILE_SONGMAP_REDUCED").format(reduced_percentage=reduced_percentage)
+file_mx_reduced = config("FILE_MX_REDUCED").format(reduced_percentage=reduced_percentage)
 
 # %% Check for already created files, if they are not present, create them
 start = time.perf_counter()

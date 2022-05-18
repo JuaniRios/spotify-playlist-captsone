@@ -4,13 +4,12 @@ import numpy as np
 import pandas as pd
 from scipy.sparse.linalg import svds
 
-from lightfm import LightFM
-from lightfm.evaluation import precision_at_k
-from lightfm.evaluation import auc_score
-
 
 def lightfm_model(mx, playlists, songmap, lr=0.05, comp=30, ep=25, sched="adagrad", loss="warp",
-                  n_recommendations = 10, n_playlists = 100):
+                  n_recommendations=10, n_playlists=100):
+    from lightfm import LightFM
+    from lightfm.evaluation import precision_at_k
+    from lightfm.evaluation import auc_score
 
     model = LightFM(learning_rate=lr, loss=loss, no_components=comp, learning_schedule=sched)
     print("Training model...")
@@ -30,8 +29,7 @@ def lightfm_model(mx, playlists, songmap, lr=0.05, comp=30, ep=25, sched="adagra
     for idx in range(n_playlists):
         scores.append(model.predict(idx, np.arange(n_items)))
 
-    preds_df = pd.DataFrame(scores, columns=list(songmap.keys())) #df for prediction scores for each song
-
+    preds_df = pd.DataFrame(scores, columns=list(songmap.keys()))  # df for prediction scores for each song
 
     results = []
     for idx in range(n_playlists):  # pick top n recommendations that are not already present in playlist
@@ -40,7 +38,8 @@ def lightfm_model(mx, playlists, songmap, lr=0.05, comp=30, ep=25, sched="adagra
 
     return results
 
-def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists = 100):
+
+def simple_svd(matrix, playlists, songmap, n_recommendations=10, n_playlists=100):
     '''
     Input:
         - matrix: coordinate sparse matrix
@@ -76,7 +75,7 @@ def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists =
     # !!!! The values are not probabilities yet. Need to normalize the values to scale 0-1
     print("Reconstructing matrix...")
     preds_df = pd.DataFrame(recommendations, columns=list(songmap.keys()))
-    #TODO: This process consumes a lot of time and processing power. Optimize! Ideas: np.arrays
+    # TODO: This process consumes a lot of time and processing power. Optimize! Ideas: np.arrays
     preds_df.head()
 
     # Access Recommendations by Playlist Index
@@ -95,9 +94,10 @@ def simple_svd(matrix, playlists, songmap, n_recommendations = 10, n_playlists =
         # print(SVD_recs, end="\n\n\n")
 
         # Show 20 first songs from playlist to compare the recommendations. Use same index as previous cell
-        #print(f"First 10 recommendations for playlist nr. {idx}: {recommendations[idx][:20]}")
+        # print(f"First 10 recommendations for playlist nr. {idx}: {recommendations[idx][:20]}")
 
     return results
+
 
 def mean_hit_rate(recommendations, leftout_songs):
     '''
@@ -109,7 +109,7 @@ def mean_hit_rate(recommendations, leftout_songs):
     This function evaluates the results of the recommendations by calculating the hit rate.
     Output: average hit rate over all playlists
     '''
-    hit_rates = [] # store hit rates for each playlist
+    hit_rates = []  # store hit rates for each playlist
     for idx in range(len(recommendations)):
         # Calculate Hit Rate for each playlist
         # sum up all songs in leftout_songs which are in our top recommendations for each playlist

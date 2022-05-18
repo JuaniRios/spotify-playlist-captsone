@@ -8,13 +8,13 @@ import random
 
 
 def dump_all_songs(filename, data_loc):
-    '''
+    """
     Input:
         - filename: name of file to dump
         - data_loc: path to data source
     This function creates a file containing all the playlists in our dataset.
     Output: List of lists containing all songs.
-    '''
+    """
     all_songs = []  # all songs
     files = os.listdir(data_loc)  # store source data location
     for file in files:
